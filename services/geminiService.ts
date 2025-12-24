@@ -2,7 +2,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { MusicAnalysis } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// 确保在尝试初始化之前 API_KEY 存在，或者提供更清晰的错误提示
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing API_KEY environment variable");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 const responseSchema = {
   type: Type.OBJECT,
@@ -31,6 +38,7 @@ const responseSchema = {
 export const analyzeMusic = async (
   input: { type: 'text' | 'audio', content: string, mimeType?: string }
 ): Promise<MusicAnalysis> => {
+  const ai = getAI();
   const model = 'gemini-3-pro-preview';
   
   let contents: any;
@@ -47,7 +55,7 @@ export const analyzeMusic = async (
 
   const response = await ai.models.generateContent({
     model,
-    contents: typeof contents === 'string' ? contents : contents,
+    contents: typeof contents === 'string' ? { parts: [{ text: contents }] } : contents,
     config: {
       responseMimeType: "application/json",
       responseSchema: responseSchema,
