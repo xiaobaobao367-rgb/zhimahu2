@@ -1,0 +1,7 @@
+{
+  "name": "芝麻糊听音乐",
+  "description": "An AI-powered music style recognition app that identifies genres, moods, and characteristics from audio uploads, song titles, or links.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
