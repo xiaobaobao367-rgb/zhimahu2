@@ -50,7 +50,7 @@ const App: React.FC = () => {
       
     } catch (err: any) {
       console.error(err);
-      setError(err.message || '芝麻糊迷路了，没能识别出这段音乐。请重试一次吧！');
+      setError(err.message || '芝麻糊分心了，请重试一次吧！');
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +75,7 @@ const App: React.FC = () => {
             </div>
             <div className="text-center">
               <p className="text-zinc-900 font-bold text-xl">芝麻糊正在努力辨音...</p>
-              <p className="text-zinc-400 text-sm mt-1">正在通过 AI 深度分析旋律风格</p>
+              <p className="text-zinc-400 text-sm mt-1">本地智能引擎分析中（演示模式）</p>
             </div>
           </div>
         )}
@@ -129,7 +129,7 @@ const App: React.FC = () => {
       <footer className="fixed bottom-0 left-0 right-0 p-4 pointer-events-none">
         <div className="max-w-xs mx-auto bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-zinc-200/50 shadow-lg text-center pointer-events-auto">
           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-            Powered by Gemini 3 Flash
+            OFFLINE DEMO MODE
           </p>
         </div>
       </footer>
