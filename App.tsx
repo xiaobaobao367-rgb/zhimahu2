@@ -13,7 +13,6 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Load history from localStorage
   useEffect(() => {
     const savedHistory = localStorage.getItem('music_history');
     if (savedHistory) {
@@ -45,14 +44,13 @@ const App: React.FC = () => {
       setHistory(updatedHistory);
       localStorage.setItem('music_history', JSON.stringify(updatedHistory));
       
-      // Scroll to result
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }, 100);
       
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('芝麻糊迷路了，没能识别出这段音乐。请重试一次吧！');
+      setError(err.message || '芝麻糊迷路了，没能识别出这段音乐。请重试一次吧！');
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +81,11 @@ const App: React.FC = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-3xl text-center max-w-2xl mx-auto">
+          <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-3xl text-center max-w-2xl mx-auto animate-in fade-in slide-in-from-top-4">
             <svg className="w-12 h-12 mx-auto mb-3 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
-            <p className="font-bold">{error}</p>
+            <p className="font-bold whitespace-pre-wrap">{error}</p>
           </div>
         )}
 
@@ -128,11 +126,10 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Persistent CTA or info */}
       <footer className="fixed bottom-0 left-0 right-0 p-4 pointer-events-none">
         <div className="max-w-xs mx-auto bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-zinc-200/50 shadow-lg text-center pointer-events-auto">
           <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
-            Powered by Gemini 3 Pro
+            Powered by Gemini 3 Flash
           </p>
         </div>
       </footer>

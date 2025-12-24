@@ -2,11 +2,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { MusicAnalysis } from "../types";
 
-// 确保在尝试初始化之前 API_KEY 存在，或者提供更清晰的错误提示
 const getAI = () => {
+  // 在浏览器环境下，尝试从全局或环境变量中获取 API Key
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("Missing API_KEY environment variable");
+    throw new Error("API_KEY 未配置。请在 Vercel 的 Environment Variables 中设置名为 API_KEY 的变量。");
   }
   return new GoogleGenAI({ apiKey });
 };
@@ -39,33 +39,54 @@ export const analyzeMusic = async (
   input: { type: 'text' | 'audio', content: string, mimeType?: string }
 ): Promise<MusicAnalysis> => {
   const ai = getAI();
-  const model = 'gemini-3-pro-preview';
+  // 切换到更稳定的 flash 模型
+  const modelName = 'gemini-3-flash-preview';
   
   let contents: any;
   if (input.type === 'audio') {
     contents = {
       parts: [
         { inlineData: { data: input.content, mimeType: input.mimeType || 'audio/mpeg' } },
-        { text: "Identify the music style, genre, mood, and technical characteristics of this audio. Also provide a witty comment as '芝麻糊', a curious and music-loving pet cat/dog." }
+        { text: "请识别这段音频的音乐风格、流派、情绪和技术特点。并以宠物'芝麻糊'的口吻写一段俏皮的评论。" }
       ]
     };
   } else {
-    contents = `Analyze the music style for the following song title or link: "${input.content}". Identify its genre, sub-genre, mood, typical tempo, instruments, and era. Also provide a witty comment as '芝麻糊', a curious pet.`;
+    contents = {
+      parts: [
+        { text: `请分析以下歌曲或描述的音乐风格: "${input.content}"。包括流派、细分流派、情绪、典型节奏、乐器和年代。并以宠物'芝麻糊'的口吻写一段俏皮的评论。` }
+      ]
+    };
   }
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: typeof contents === 'string' ? { parts: [{ text: contents }] } : contents,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: responseSchema,
-      temperature: 0.7,
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: responseSchema,
+        temperature: 0.7,
+      },
+    });
 
-  if (!response.text) {
-    throw new Error("Failed to get analysis from AI");
+    const text = response.text;
+    if (!text) {
+      throw new Error("AI 未返回有效内容，请换一首歌试试。");
+    }
+
+    return JSON.parse(text.trim()) as MusicAnalysis;
+  } catch (error: any) {
+    console.error("Gemini API Error:", error);
+    // 抛出更有意义的错误信息
+    if (error.message?.includes("API_KEY")) {
+      throw new Error("API Key 无效或未设置，请检查环境变量。");
+    }
+    if (error.message?.includes("429")) {
+      throw new Error("请求太频繁啦，请稍后再试。");
+    }
+    if (error.message?.includes("404")) {
+      throw new Error(`模型 ${modelName} 在当前区域不可用。`);
+    }
+    throw new Error(error.message || "由于网络或模型原因，识别失败了。");
   }
-
-  return JSON.parse(response.text.trim()) as MusicAnalysis;
 };
